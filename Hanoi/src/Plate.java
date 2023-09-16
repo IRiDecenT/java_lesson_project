@@ -3,12 +3,13 @@ import java.util.Random;
 
 public class Plate {
     Point location;
-    int level;
+    int height;
     Color color;
 
-    Plate(int l) {
-        level = l;
+    Plate(int n) {
+        height = n;
         Random rand = new Random();
+        // 随机颜色
         color = new Color(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256));
     }
 
@@ -17,6 +18,6 @@ public class Plate {
     }
 
     public void Draw(Graphics g) {
-        g.fillRect(location.x - (40 + level * 30) / 2, location.y, 40 + level * 30, 20);
+        g.fillRect(location.x - (40 + height * 30) / 2, location.y, 40 + height * 30, 20);
     }
 }

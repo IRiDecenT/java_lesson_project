@@ -2,13 +2,15 @@ import java.awt.*;
 import java.util.Stack;
 
 public class Tower extends Canvas {
+    // 用栈来维护每一个柱子上的盘子，由于每次都只能移动最上面的盘子，类似栈
     Stack<Plate> plates;
     Color color;
 
-    Tower(int n, Color c) {
+    Tower(Color c) {
         color = c;
         plates = new Stack<>();
     }
+
 
     public void addPlate(Plate plate) {
         plates.push(plate);

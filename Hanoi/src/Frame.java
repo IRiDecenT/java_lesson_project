@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Frame extends JFrame implements ActionListener {
     // 常量参数
@@ -15,7 +17,8 @@ public class Frame extends JFrame implements ActionListener {
     final int TOWER_TARGET = 2;
 
     Panel panel;
-    JButton prevStep, nextStep, initButton, autoButton;
+    Map<String, JButton> buttonMap;
+    //JButton prevStep, nextStep, initButton, autoButton;
     TextField inputPlateNum;
     JLabel plateNumLabel, stepNumLabel;
     JPanel menu;
@@ -24,10 +27,12 @@ public class Frame extends JFrame implements ActionListener {
     int curStep;
     int totalSteps = 0;
     boolean isAutoRunning = false;
+    Timer autoTimer;
 
     public Frame() {
         super("汉诺塔游戏演示");
 
+        buttonMap = new HashMap<>();
         // 初始化组件
         initComponents();
         // 主要面板放在中间
@@ -55,17 +60,21 @@ public class Frame extends JFrame implements ActionListener {
         movement = new int[totalSteps][2];
         panel = new Panel(plateNum);
 
-        prevStep = new JButton("上一步");
-        prevStep.setFont(defaultFont);
+        loadButtonsMap();
+        setButtonsFont();
 
-        nextStep = new JButton("下一步");
-        nextStep.setFont(defaultFont);
-
-        initButton = new JButton("初始化");
-        initButton.setFont(defaultFont);
-
-        autoButton = new JButton("自动演示");
-        autoButton.setFont(defaultFont);
+        addButton2Listener();
+//        prevStep = new JButton("上一步");
+//        prevStep.setFont(defaultFont);
+//
+//        nextStep = new JButton("下一步");
+//        nextStep.setFont(defaultFont);
+//
+//        initButton = new JButton("初始化");
+//        initButton.setFont(defaultFont);
+//
+//        autoButton = new JButton("自动演示");
+//        autoButton.setFont(defaultFont);
 
         plateNumLabel = new JLabel("盘子数量:");
         plateNumLabel.setFont(defaultFont);
@@ -76,19 +85,46 @@ public class Frame extends JFrame implements ActionListener {
         stepNumLabel = new JLabel("当前步数/总步数: " + curStep + "/" + totalSteps);
         stepNumLabel.setFont(defaultFont);
 
-        prevStep.addActionListener(this);
-        nextStep.addActionListener(this);
-        initButton.addActionListener(this);
-        autoButton.addActionListener(this);
+//        prevStep.addActionListener(this);
+//        nextStep.addActionListener(this);
+//        initButton.addActionListener(this);
+//        autoButton.addActionListener(this);
 
         menu = new JPanel();
         menu.add(plateNumLabel);
         menu.add(inputPlateNum);
-        menu.add(prevStep);
-        menu.add(nextStep);
-        menu.add(initButton);
-        menu.add(autoButton);
+
+        addButton2Menu();
+//        menu.add(prevStep);
+//        menu.add(nextStep);
+//        menu.add(initButton);
+//        menu.add(autoButton);
         menu.add(stepNumLabel);
+    }
+
+    private void loadButtonsMap() {
+        buttonMap.put("preStep", new JButton("上一步"));
+        buttonMap.put("nextStep", new JButton("下一步"));
+        buttonMap.put("initButton", new JButton("初始化"));
+        buttonMap.put("autoButton", new JButton("自动演示"));
+    }
+
+    private void setButtonsFont(){
+        for(JButton button : buttonMap.values()){
+            button.setFont(defaultFont);
+        }
+    }
+
+    private void addButton2Listener(){
+        for(JButton button : buttonMap.values()){
+            button.addActionListener(this);
+        }
+    }
+
+    private void addButton2Menu() {
+        for(JButton button : buttonMap.values()){
+            menu.add(button);
+        }
     }
 
     private int calTotalSteps(int n) {
@@ -97,7 +133,7 @@ public class Frame extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource() == initButton) {
+        if (e.getSource() == buttonMap.get("initButton")) {
             try {
                 plateNum = Integer.parseInt(inputPlateNum.getText());
                 totalSteps = calTotalSteps(plateNum);
@@ -116,19 +152,19 @@ public class Frame extends JFrame implements ActionListener {
             hanoi(plateNum, TOWER_SOURCE, TOWER_HELPER, TOWER_TARGET);
             curStep = 0;
 
-        } else if (e.getSource() == nextStep) {
+        } else if (e.getSource() == buttonMap.get("nextStep")) {
             if (curStep >= totalSteps)
                 return;
             panel.movePlate(movement[curStep][0], movement[curStep][1]);
             curStep++;
             stepNumLabel.setText("当前步数/总步数: " + curStep + "/" + totalSteps);
-        } else if (e.getSource() == prevStep) {
+        } else if (e.getSource() == buttonMap.get("prevStep")) {
             if (curStep <= 0)
                 return;
             curStep--;
             panel.movePlate(movement[curStep][1], movement[curStep][0]);
             stepNumLabel.setText("当前步数/总步数: " + curStep + "/" + totalSteps);
-        }else if(e.getSource() == autoButton) {
+        }else if(e.getSource() == buttonMap.get("autoButton")) {
 
         }
     }

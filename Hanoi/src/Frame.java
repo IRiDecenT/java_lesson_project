@@ -51,7 +51,6 @@ public class Frame extends JFrame implements ActionListener {
         componentMap = new HashMap<>();
         // 初始化组件
         initComponents();
-
         // 主要面板放在中间
         add(panel, BorderLayout.CENTER);
         // operate menu放置到底部
@@ -74,15 +73,15 @@ public class Frame extends JFrame implements ActionListener {
         curStep = 0; //计算时会修改curStep，后续交互时curStep仍需用到，需要置零
 
         // for debug
-        for (int[] line : movement) {
-            for (int i : line) {
-                System.out.print(i + " ");
-            }
-            System.out.println();
-        }
+//        for (int[] line : movement) {
+//            for (int i : line) {
+//                System.out.print(i + " ");
+//            }
+//            System.out.println();
+//        }
     }
 
-    public void initComponents() {
+    private void initComponents() {
         totalSteps = calTotalSteps(plateNum);
 
         movement = new int[totalSteps][2];

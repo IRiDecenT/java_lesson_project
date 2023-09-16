@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +20,8 @@ public class Frame extends JFrame implements ActionListener {
     // movement移动路径
     final int SRC = 0;
     final int DST = 1;
+    // 自动演示时间间隔
+    final int PERIOD = 400;
 
     Map<String, String> buttonTextMap = new HashMap<>() {{
         put("preStep", "上一步");
@@ -37,7 +38,7 @@ public class Frame extends JFrame implements ActionListener {
 
     int[][] movement; // 记录移动路径
     int plateNum = DEFAULT_PLATE_NUM; // 初始时，盘子数目设置为默认值
-    int curStep = 0; // 记录当前是第几步
+    int curStep; // 记录当前是第几步
     int totalSteps = 0; // 记录n个盘子的总步数 （2^N - 1）
     boolean isAutoRunning = false;
     Timer autoTimer;
@@ -192,7 +193,7 @@ public class Frame extends JFrame implements ActionListener {
         return Integer.parseInt(((JTextField) componentMap.get("inputPlateNum")).getText());
     }
 
-    private void refreshStepNumLabel(){
+    private void refreshStepNumLabel() {
         ((JLabel) componentMap.get("stepNumLabel")).setText("当前步数/总步数: " + curStep + "/" + totalSteps);
     }
 
@@ -217,9 +218,41 @@ public class Frame extends JFrame implements ActionListener {
                 return;
             doPreStep();
         } else if (e.getSource() == componentMap.get("autoButton")) {
-
+            if (isAutoRunning) {
+                stopAutoRunning();
+            } else {
+                startAutoRunning();
+            }
         }
         refreshStepNumLabel();
+    }
+
+    // 结束自动演示
+    private void stopAutoRunning() {
+        JButton autoButton = (JButton) componentMap.get("autoButton");
+        autoButton.setText("自动演示");
+        isAutoRunning = false;
+        if (autoTimer != null) {
+            autoTimer.stop();
+        }
+    }
+
+    // 开始自动演示
+    private void startAutoRunning() {
+        JButton autoButton = (JButton) componentMap.get("autoButton");
+        autoButton.setText("停止演示");
+        isAutoRunning = true;
+
+        // lambda表达式实现ActionEvent
+        autoTimer = new Timer(PERIOD, e -> {
+            if (curStep < totalSteps) {
+                doNextStep();
+                refreshStepNumLabel();
+            } else {
+                stopAutoRunning();
+            }
+        });
+        autoTimer.start();
     }
 
     // 递归计算汉诺塔解决路径，保存在movement中

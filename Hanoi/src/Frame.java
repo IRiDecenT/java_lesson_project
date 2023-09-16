@@ -40,7 +40,9 @@ public class Frame extends JFrame implements ActionListener {
     int plateNum = DEFAULT_PLATE_NUM; // 初始时，盘子数目设置为默认值
     int curStep; // 记录当前是第几步
     int totalSteps = 0; // 记录n个盘子的总步数 （2^N - 1）
+    //自动演示状态控制
     boolean isAutoRunning = false;
+    // 计时器
     Timer autoTimer;
 
     public Frame() {
@@ -159,6 +161,7 @@ public class Frame extends JFrame implements ActionListener {
 
     }
 
+    // 计算n个盘子三柱汉诺塔问题的解的步数
     private int calTotalSteps(int n) {
         return (int) Math.pow(2, n) - 1;
     }
@@ -193,6 +196,7 @@ public class Frame extends JFrame implements ActionListener {
         return Integer.parseInt(((JTextField) componentMap.get("inputPlateNum")).getText());
     }
 
+    // 刷新 当前步数/总步数 标签
     private void refreshStepNumLabel() {
         ((JLabel) componentMap.get("stepNumLabel")).setText("当前步数/总步数: " + curStep + "/" + totalSteps);
     }
@@ -209,14 +213,17 @@ public class Frame extends JFrame implements ActionListener {
                 return;
             }
             doInit();
+        // 按下下一步键
         } else if (e.getSource() == componentMap.get("nextStep")) {
             if (curStep >= totalSteps)
                 return;
             doNextStep();
+        // 按下上一步键
         } else if (e.getSource() == componentMap.get("preStep")) {
             if (curStep <= 0)
                 return;
             doPreStep();
+        // 按下自动演示键
         } else if (e.getSource() == componentMap.get("autoButton")) {
             if (isAutoRunning) {
                 stopAutoRunning();

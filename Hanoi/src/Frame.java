@@ -1,44 +1,51 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Frame extends JFrame implements ActionListener {
     // 常量参数
     final Font defaultFont = new Font("宋体", Font.PLAIN, 20);
-    final int DEFAULT_PLATE_NUM = 3;
+    final int DEFAULT_PLATE_NUM = 3; // 默认盘子数目
+    // 界面参数
     final int X_BOUND = 300;
     final int Y_BOUND = 100;
     final int WIDTH_BOUND = 1400;
     final int HEIGHT_BOUND = 680;
+    // tower命名
     final int TOWER_SOURCE = 0;
     final int TOWER_HELPER = 1;
     final int TOWER_TARGET = 2;
+    // movement移动路径
+    final int SRC = 0;
+    final int DST = 1;
 
+
+    // 展示面板
     Panel panel;
-    Map<String, JButton> buttonMap;
-    //JButton prevStep, nextStep, initButton, autoButton;
-    TextField inputPlateNum;
-    JLabel plateNumLabel, stepNumLabel;
-    JPanel menu;
-    int[][] movement;
-    int plateNum = DEFAULT_PLATE_NUM;
-    int curStep;
-    int totalSteps = 0;
+    // 用来维护各个组件（label、button、text）的哈希表，根据Java Swing组件的继承体系，统一用JComponent管理
+    Map<String, JComponent> componentMap;
+
+    int[][] movement; // 记录移动路径
+    int plateNum = DEFAULT_PLATE_NUM; // 初始时，盘子数目设置为默认值
+    int curStep = 0; // 记录当前是第几步
+    int totalSteps = 0; // 记录n个盘子的总步数 （2^N - 1）
     boolean isAutoRunning = false;
     Timer autoTimer;
 
     public Frame() {
         super("汉诺塔游戏演示");
 
-        buttonMap = new HashMap<>();
+        componentMap = new HashMap<>();
         // 初始化组件
         initComponents();
+
         // 主要面板放在中间
         add(panel, BorderLayout.CENTER);
-        // menu放置到底部
-        add(menu, BorderLayout.SOUTH);
+        // operate menu放置到底部
+        add(componentMap.get("menu"), BorderLayout.SOUTH);
 
         // 关闭窗口监听
         addWindowListener(new WindowAdapter() {
@@ -47,11 +54,22 @@ public class Frame extends JFrame implements ActionListener {
             }
         });
 
+        // 设置窗口
         setBounds(X_BOUND, Y_BOUND, WIDTH_BOUND, HEIGHT_BOUND);
         setVisible(true);
         revalidate();
+
+        // 计算保存结果的路径
         hanoi(plateNum, TOWER_SOURCE, TOWER_HELPER, TOWER_TARGET);
         curStep = 0;
+
+        // for debug
+//        for (int[] line : movement) {
+//            for (int i : line) {
+//                System.out.print(i + " ");
+//            }
+//            System.out.println();
+//        }
     }
 
     public void initComponents() {
@@ -60,71 +78,69 @@ public class Frame extends JFrame implements ActionListener {
         movement = new int[totalSteps][2];
         panel = new Panel(plateNum);
 
-        loadButtonsMap();
-        setButtonsFont();
-
-        addButton2Listener();
-//        prevStep = new JButton("上一步");
-//        prevStep.setFont(defaultFont);
-//
-//        nextStep = new JButton("下一步");
-//        nextStep.setFont(defaultFont);
-//
-//        initButton = new JButton("初始化");
-//        initButton.setFont(defaultFont);
-//
-//        autoButton = new JButton("自动演示");
-//        autoButton.setFont(defaultFont);
-
-        plateNumLabel = new JLabel("盘子数量:");
-        plateNumLabel.setFont(defaultFont);
-
-        inputPlateNum = new TextField(String.valueOf(DEFAULT_PLATE_NUM), 8);
-        inputPlateNum.setFont(defaultFont);
-
-        stepNumLabel = new JLabel("当前步数/总步数: " + curStep + "/" + totalSteps);
-        stepNumLabel.setFont(defaultFont);
-
-//        prevStep.addActionListener(this);
-//        nextStep.addActionListener(this);
-//        initButton.addActionListener(this);
-//        autoButton.addActionListener(this);
-
-        menu = new JPanel();
-        menu.add(plateNumLabel);
-        menu.add(inputPlateNum);
-
-        addButton2Menu();
-//        menu.add(prevStep);
-//        menu.add(nextStep);
-//        menu.add(initButton);
-//        menu.add(autoButton);
-        menu.add(stepNumLabel);
+        loadComponents2Map();   //将组件初始化并导入哈希表
+        setComponentsFont();    // 设置字体
+        addButton2ActionListener(); // 监听按键
+        addComponent2Menu(); // 将button，text，label加入到menu
     }
 
-    private void loadButtonsMap() {
-        buttonMap.put("preStep", new JButton("上一步"));
-        buttonMap.put("nextStep", new JButton("下一步"));
-        buttonMap.put("initButton", new JButton("初始化"));
-        buttonMap.put("autoButton", new JButton("自动演示"));
+    // 将组件信息初始化并加入到哈希表中
+    private void loadComponents2Map() {
+        // buttons
+        componentMap.put("preStep", new JButton("上一步"));
+        componentMap.put("nextStep", new JButton("下一步"));
+        componentMap.put("initButton", new JButton("初始化"));
+        componentMap.put("autoButton", new JButton("自动演示"));
+
+        // labels
+        componentMap.put("plateNumLabel", new JLabel("盘子数量:"));
+        componentMap.put("stepNumLabel", new JLabel("当前步数/总步数: " + curStep + "/" + totalSteps));
+
+        //input text
+        componentMap.put("inputPlateNum", new JTextField(String.valueOf(DEFAULT_PLATE_NUM), 8));
+
+        //operate menu
+        componentMap.put("menu", new JPanel());
     }
 
-    private void setButtonsFont(){
-        for(JButton button : buttonMap.values()){
-            button.setFont(defaultFont);
+
+    // 利用多态，统一设置button label text等组件字体
+    private void setComponentsFont() {
+        for (JComponent component : componentMap.values()) {
+            component.setFont(defaultFont);
         }
     }
 
-    private void addButton2Listener(){
-        for(JButton button : buttonMap.values()){
-            button.addActionListener(this);
-        }
+    private void addButton2ActionListener() {
+
+
+
+        JButton pre = (JButton) componentMap.get("preStep");
+        pre.addActionListener(this);
+
+        JButton next = (JButton) componentMap.get("nextStep");
+        next.addActionListener(this);
+
+        JButton init = (JButton) componentMap.get("initButton");
+        init.addActionListener(this);
+
+        JButton auto = (JButton) componentMap.get("autoButton");
+        auto.addActionListener(this);
     }
 
-    private void addButton2Menu() {
-        for(JButton button : buttonMap.values()){
-            menu.add(button);
-        }
+    private void addComponent2Menu() {
+        JPanel menu = (JPanel) componentMap.get("menu");
+
+        menu.add(componentMap.get("plateNumLabel"));
+        menu.add(componentMap.get("inputPlateNum"));
+
+        menu.add(componentMap.get("preStep"));
+        menu.add(componentMap.get("nextStep"));
+        menu.add(componentMap.get("initButton"));
+        menu.add(componentMap.get("autoButton"));
+
+        menu.add(componentMap.get("stepNumLabel"));
+
     }
 
     private int calTotalSteps(int n) {
@@ -133,11 +149,11 @@ public class Frame extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource() == buttonMap.get("initButton")) {
+        if (e.getSource() == componentMap.get("initButton")) {
             try {
-                plateNum = Integer.parseInt(inputPlateNum.getText());
+                plateNum = Integer.parseInt(((JTextField) componentMap.get("inputPlateNum")).getText());
                 totalSteps = calTotalSteps(plateNum);
-            } catch (NumberFormatException ee) {
+            } catch (NumberFormatException ne) {
                 JOptionPane.showMessageDialog(null, "输入错误 ");
                 return;
             }
@@ -148,37 +164,38 @@ public class Frame extends JFrame implements ActionListener {
 
             movement = new int[totalSteps][2];
             curStep = 0;
-            stepNumLabel.setText("当前步数/总步数: " + curStep + "/" + totalSteps);
+            ((JLabel) componentMap.get("stepNumLabel")).setText("当前步数/总步数: " + curStep + "/" + totalSteps);
             hanoi(plateNum, TOWER_SOURCE, TOWER_HELPER, TOWER_TARGET);
             curStep = 0;
 
-        } else if (e.getSource() == buttonMap.get("nextStep")) {
+        } else if (e.getSource() == componentMap.get("nextStep")) {
             if (curStep >= totalSteps)
                 return;
-            panel.movePlate(movement[curStep][0], movement[curStep][1]);
-            curStep++;
-            stepNumLabel.setText("当前步数/总步数: " + curStep + "/" + totalSteps);
-        } else if (e.getSource() == buttonMap.get("prevStep")) {
+            panel.movePlate(movement[curStep][SRC], movement[curStep][DST]);
+            ++curStep;
+            ((JLabel) componentMap.get("stepNumLabel")).setText("当前步数/总步数: " + curStep + "/" + totalSteps);
+        } else if (e.getSource() == componentMap.get("preStep")) {
             if (curStep <= 0)
                 return;
-            curStep--;
-            panel.movePlate(movement[curStep][1], movement[curStep][0]);
-            stepNumLabel.setText("当前步数/总步数: " + curStep + "/" + totalSteps);
-        }else if(e.getSource() == buttonMap.get("autoButton")) {
+            --curStep;
+            panel.movePlate(movement[curStep][DST], movement[curStep][SRC]);
+            ((JLabel) componentMap.get("stepNumLabel")).setText("当前步数/总步数: " + curStep + "/" + totalSteps);
+        } else if (e.getSource() == componentMap.get("autoButton")) {
 
         }
     }
 
+    // 递归计算汉诺塔解决路径，保存在movement中
     private void hanoi(int n, int source, int helper, int target) {
         if (n == 1) {
-            movement[curStep][0] = source;
-            movement[curStep][1] = target;
-            curStep++;
+            movement[curStep][SRC] = source;
+            movement[curStep][DST] = target;
+            ++curStep;
         } else {
             hanoi(n - 1, source, target, helper);
-            movement[curStep][0] = source;
-            movement[curStep][1] = target;
-            curStep++;
+            movement[curStep][SRC] = source;
+            movement[curStep][DST] = target;
+            ++curStep;
             hanoi(n - 1, helper, source, target);
         }
     }
